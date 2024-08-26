@@ -9,8 +9,10 @@ import SwiftUI
 import MapboxMaps
 import MapboxSearch
 import MapboxSearchUI
+import CoreLocation
 
 struct SearchView: View {
+    @Binding var centerCoordinate: CLLocationCoordinate2D? 
     @State private var mapView: MapView!
     @State private var annotationManager: PointAnnotationManager?
     @ObservedObject private var searchViewModel = SearchViewModel()
@@ -23,7 +25,11 @@ struct SearchView: View {
                         VStack(alignment: .leading) {
                             ForEach(searchViewModel.searchResults, id: \.mapboxID) { suggestion in
                                 Button(action: {
-                                    searchViewModel.selectSuggestion(locationId: suggestion.mapboxID)
+                                    searchViewModel.selectSuggestion(locationId: suggestion.mapboxID) { coordinate in
+                                        if let coordinate = coordinate {
+                                            centerCoordinate = coordinate  // Actualiza la coordenada central del mapa
+                                        }
+                                    }
                                 }) {
                                     VStack(alignment: .leading) {
                                         Text(suggestion.name)
@@ -40,12 +46,12 @@ struct SearchView: View {
                                         }
                                     }
                                     .padding(.horizontal ,15)
+                                    .frame(
+                                        maxWidth: .infinity,
+                                        alignment: .leading
+                                    )
                                 }
                                 .padding(4)
-                                .frame(
-                                    maxWidth: .infinity,
-                                    alignment: .leading
-                                )
                             }
                         }
                     }

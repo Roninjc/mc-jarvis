@@ -12,6 +12,8 @@ struct InitialMapView: View {
     @StateObject private var locationManager = LocationManager()
     @State var viewport: Viewport = .styleDefault
     @State private var mapLoaded = false
+//    @State private var mapView: MapView?
+    @State private var centerCoordinate: CLLocationCoordinate2D?
 
     var body: some View {
         
@@ -28,10 +30,26 @@ struct InitialMapView: View {
                 animateToUserLocation()
             }
         }
+        .onChange(of: centerCoordinate) {
+            guard let newCoordinate = centerCoordinate else { return }
+
+            withViewportAnimation(.fly(duration: 3)) {
+                viewport = .camera(
+                    center: newCoordinate,
+                    zoom: 15,
+                    pitch: 0
+                )
+            }
+//            TODO: Hay que añadir un marcador al mapa con la nueva ubicacion
+//            MapViewAnnotation(coordinate: newCoordinate) {
+//               Text("🚀")
+//                  .background(Circle().fill(.red))
+//            }
+        }
         .ignoresSafeArea()
         .overlay(alignment: .bottom, content: {
             VStack {
-                SearchView()
+                SearchView(centerCoordinate: $centerCoordinate)
             }
         })
     }
@@ -44,7 +62,8 @@ struct InitialMapView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
             withViewportAnimation(.fly(duration: 3)) {
                 viewport = .followPuck(
-                    zoom: 15
+                    zoom: 15,
+                    pitch: 60
                 )
             }
         }
