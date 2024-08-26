@@ -14,22 +14,26 @@ struct InitialMapView: View {
     @State private var mapLoaded = false
 
     var body: some View {
-        VStack {
-            // Passes the viewport binding to the map.
-            Map(viewport: $viewport) {
-                Puck2D()
-            }
-            .onStyleLoaded { _ in
-                mapLoaded = true
+        
+        Map(viewport: $viewport) {
+            Puck2D()
+        }
+        .onStyleLoaded { _ in
+            mapLoaded = true
+            animateToUserLocation()
+        }
+        .onAppear {
+            // Triggered when the view appears, just in case.
+            if mapLoaded {
                 animateToUserLocation()
             }
-            .onAppear {
-                // Triggered when the view appears, just in case.
-                if mapLoaded {
-                    animateToUserLocation()
-                }
-            }
         }
+        .ignoresSafeArea()
+        .overlay(alignment: .bottom, content: {
+            VStack {
+                SearchView()
+            }
+        })
     }
 
     private func animateToUserLocation() {
@@ -40,8 +44,7 @@ struct InitialMapView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
             withViewportAnimation(.fly(duration: 3)) {
                 viewport = .followPuck(
-                    zoom: 16,
-                    pitch: 60
+                    zoom: 15
                 )
             }
         }
